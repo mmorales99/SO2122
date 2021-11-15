@@ -1,0 +1,10 @@
+{
+	"makefile.extensionOutputFolder": "./.vscode",
+	"makefile.launchConfigurations": [
+		{
+			"cwd": "/home/lolo/Escritorio/so 20212022/prac2/servidor/bin",
+			"binaryPath": "/home/lolo/Escritorio/so 20212022/prac2/servidor/bin/Servidor",
+			"binaryArgs": []
+		}
+	]
+}

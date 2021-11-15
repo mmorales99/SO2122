@@ -1,0 +1,5 @@
+make servidor -f "/home/lolo/Escritorio/so 20212022/prac2/makefile" --dry-run --keep-going --print-directory
+make: Entering directory '/home/lolo/Escritorio/so 20212022/prac2'
+make: 'servidor' is up to date.
+make: Leaving directory '/home/lolo/Escritorio/so 20212022/prac2'
+ 
