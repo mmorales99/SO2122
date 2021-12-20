@@ -395,17 +395,30 @@ void executeAlgorithms(string file, int opt){
     saveResults(events);
 }
 
-int main(int argc, char **arrgv){
-    do {                
-        printf("Introduce la direccion del archivo que contiene los procesos a simular: ");
-        string filename; getline(cin, filename);
-        printf("Que algoritmo deseas aplicar? Mejor Hueco: M | Peor Hueco: P ");
-        char opt = getchar();
-        opt = toupper(opt);
+int main(int argc, char **argv){
+    do {
+        string filename;
+        if(argc != 3 ){
+            printf("Usalo como: gest url_al_fichero algor\n");
+        }
+        if(argc < 2 ){
+            printf("Introduce la direccion del archivo que contiene los procesos a simular: ");
+            getline(cin, filename);
+        }else{
+            filename = string(argv[1]);
+        }
+        char opt;
+        if(argc < 3){
+            printf("Que algoritmo deseas aplicar? [ Mejor Hueco: M | Peor Hueco: P | Primer Hueco: F| Siguiente Hueco: S ]:");
+            opt = getchar();
+            opt = toupper(opt);
+        }else{
+            opt = toupper(argv[2][0]);
+        }
         executeAlgorithms(filename, opt);
         printf("Los resultados los puedes consultar en el archivo: %s", OUTPUT.c_str());
-        printf("Quieres visualizarlos ahora? [S/N]");
-        printf("Quieres introducir nuevos procesos? Se borrara el contenido de %s [S/N]", OUTPUT.c_str());
+        //printf("Quieres visualizarlos ahora? [S/N]");
+        if(argc==1) printf("Quieres introducir nuevos procesos? Se borrara el contenido de %s [S/N]", OUTPUT.c_str());
         if(toupper(getchar())=='N') break;
     } while (true);
     return 0;
