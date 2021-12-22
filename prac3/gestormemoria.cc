@@ -48,10 +48,10 @@ class Proceso{
     void setExecTime(int e){
         this->exec_time = e;
     }
-    string tostring(){
-        char *r;
-        sprintf(r, "[%d %s %d]", this->get_mp(), this->name.c_str(), this->get_rm());
-        return string(r);
+    virtual string tostring(){
+        stringstream r;
+        r<<"["<< this->get_mp() << " "<< this->name.c_str()<< " " << this->get_rm() << "]";
+        return r.str();
     }
 };
 
@@ -66,10 +66,10 @@ class Event{
     void addElement(Proceso p){
         this->list.push_back(p);
     }
-    vector<Proceso> getList(){
+    vector<Proceso> getList()const {
         return list;
     }
-    int getOrder(){
+    int getOrder() const {
         return num;
     }
     void setOrder(int n){
@@ -82,37 +82,38 @@ class Hueco : public Proceso{
     Hueco(int start, int space){
         this->setMountingPoint(start);
         this->setRequiredMem(space);
+        this->setName("hueco");
     }
-    string tostring(){
-        char *r;
-        sprintf(r, "[%d hueco %d]", this->get_mp(), this->get_rm());
-        return string(r);
+    string tostring() override{ 
+        stringstream r;
+        r << "[" << this->get_mp() <<" hueco "<< this->get_rm() <<"]";
+        return r.str();
     }
 };
 
-void saveResults(vector<Event> *events) {
+void saveResults(const vector<Event> &events) {
     ofstream file(OUTPUT);
     if(file.is_open()){
-        for(unsigned int i=0;i<events->size();i++){
-            string str;
-            str+=events->at(i).getOrder();
-            str+=" ";
-            vector<Proceso> list = events->at(i).getList();
+        for(unsigned int i=1;i<events.size();i++){
+            stringstream str;
+            str<<events.at(i).getOrder();
+            str<<" ";
+            vector<Proceso> list = events.at(i).getList();
             for(int j=0;j<list.size();j++){
-                str += list.at(j).tostring();
-                str += " ";
+                str << list.at(j).tostring();
+                str << " ";
             }
-            str+="\n";
-            file << str;
+            str<<"\n";
+            file << str.str();
         }
     }
 	file.close();
 }
 
-void readFile(string filename, vector<Event> *events){
+void readFile(string filename, vector<Event> &events){
     ifstream file(filename);
     if(file.is_open()) {
-        Event *e = new Event(0);
+        Event e(0);
         string str;
         while(getline(file, str)){
             vector<string> tokens;
@@ -121,14 +122,14 @@ void readFile(string filename, vector<Event> *events){
             while (getline(ss,aux,' ')){
                 tokens.push_back(aux);
             }
-            Proceso *pp = new Proceso();
-            pp->setName(tokens[0]);
-            pp->setArrival(atoi(tokens[1].c_str()));
-            pp->setRequiredMem(atoi(tokens[2].c_str()));
-            pp->setExecTime(atoi(tokens[3].c_str()));
-            e->addElement(*pp);
+            Proceso pp;
+            pp.setName(tokens[0]);
+            pp.setArrival(atoi(tokens[1].c_str()));
+            pp.setRequiredMem(atoi(tokens[2].c_str()));
+            pp.setExecTime(atoi(tokens[3].c_str()));
+            e.addElement(pp);
         }
-        events->push_back(*e);
+        events.push_back(e);
     }
 	file.close();
 }
@@ -150,7 +151,7 @@ void mejorHueco(vector<Event> *events){
     huecos.push_back(Hueco(0, MAX_MEM));
     Proceso pp = list_p.at(j++);
     while(true){
-        for(vector<Proceso>::iterator pos = runnign_proces.begin(); pos != runnign_proces.end();pos++){
+        for(vector<Proceso>::iterator pos = runnign_proces.begin(); pos != runnign_proces.end() && !runnign_proces.empty();pos++){
             Proceso pa = *pos;
             if( i + pa.get_at() >= pa.get_et() ){
                 Hueco h1(pa.get_mp(), pa.get_rm());
@@ -159,9 +160,9 @@ void mejorHueco(vector<Event> *events){
             }
         }
         sort(huecos.begin(), huecos.end(), procesosArrivaltimeSort);
-        for(vector<Hueco>::iterator pos1 = huecos.begin(); pos1 != huecos.end();pos1++){
+        for(vector<Hueco>::iterator pos1 = huecos.begin(); pos1 != huecos.end() && !huecos.empty();pos1++){
             Hueco h1 = *pos1;
-            for(vector<Hueco>::iterator pos2 = huecos.begin(); pos2 != huecos.end();pos2++){
+            for(vector<Hueco>::iterator pos2 = huecos.begin(); pos2 != huecos.end() && !huecos.empty();pos2++){
                 Hueco h2 = *pos2;
                 if(h1.get_mp()==h2.get_mp()) continue;
                 if((h1.get_mp()+h1.get_rm())==(h2.get_mp()-1)){
@@ -206,7 +207,7 @@ void peorHueco(vector<Event> *events){
     huecos.push_back(Hueco(0, MAX_MEM));
     Proceso pp = list_p.at(j++);
     while(true){
-        for(vector<Proceso>::iterator pos = runnign_proces.begin(); pos != runnign_proces.end();pos++){
+        for(vector<Proceso>::iterator pos = runnign_proces.begin(); pos != runnign_proces.end() && !runnign_proces.empty();pos++){
             Proceso pa = *pos;
             if( i + pa.get_at() >= pa.get_et() ){
                 Hueco h1(pa.get_mp(), pa.get_rm());
@@ -215,9 +216,9 @@ void peorHueco(vector<Event> *events){
             }
         }
         sort(huecos.begin(), huecos.end(),procesosArrivaltimeSort);
-        for(vector<Hueco>::iterator pos1 = huecos.begin(); pos1 != huecos.end();pos1++){
+        for(vector<Hueco>::iterator pos1 = huecos.begin(); pos1 != huecos.end() && !huecos.empty();pos1++){
             Hueco h1 = *pos1;
-            for(vector<Hueco>::iterator pos2 = huecos.begin(); pos2 != huecos.end();pos2++){
+            for(vector<Hueco>::iterator pos2 = huecos.begin(); pos2 != huecos.end() && !huecos.empty();pos2++){
                 Hueco h2 = *pos2;
                 if(h1.get_mp()==h2.get_mp()) continue;
                 if((h1.get_mp()+h1.get_rm())==h2.get_mp()-1){
@@ -254,33 +255,34 @@ void peorHueco(vector<Event> *events){
     }
 }
 
-void siguienteHueco(vector<Event> *events){
+vector<Event> siguienteHueco(vector<Event> &events){
     vector<Proceso> runnign_proces;
     vector<Hueco> huecos;
     int i = 0, j = 0;
-    vector<Proceso> list_p = events->at(0).getList();
+    vector<Proceso> list_p = events.at(0).getList();
     sort(list_p.begin(), list_p.end(),procesosArrivaltimeSort);
     huecos.push_back(Hueco(0, MAX_MEM));
     Proceso pp = list_p.at(j++);
     int last_assigned = -1;
     while(true){
-        for(vector<Proceso>::iterator pos = runnign_proces.begin(); pos != runnign_proces.end();pos++){
+        for(vector<Proceso>::iterator pos = runnign_proces.begin(); pos != runnign_proces.end() && !runnign_proces.empty();pos++){
             Proceso pa = *pos;
-            if( i + pa.get_at() >= pa.get_et() ){
+            if( i - pa.get_at() >= pa.get_et() ){
                 Hueco h1(pa.get_mp(), pa.get_rm());
                 huecos.push_back(h1);
                 runnign_proces.erase(pos);
+                if(runnign_proces.size() < 2) break;
             }
         }
         sort(huecos.begin(), huecos.end(),procesosArrivaltimeSort);
-        for(vector<Hueco>::iterator pos1 = huecos.begin(); pos1 != huecos.end();pos1++){
-            Hueco h1 = *pos1;
-            for(vector<Hueco>::iterator pos2 = huecos.begin(); pos2 != huecos.end();pos2++){
-                Hueco h2 = *pos2;
-                if(h1.get_mp()==h2.get_mp()) continue;
-                if((h1.get_mp()+h1.get_rm())==h2.get_mp()-1){
-                    h1.setRequiredMem(h1.get_rm() + h2.get_rm());
+        for(vector<Hueco>::iterator pos1 = huecos.begin(); pos1 != huecos.end() && !huecos.empty();pos1++){
+            if(huecos.size() < 2) break;
+            for(vector<Hueco>::iterator pos2 = huecos.begin(); pos2 != huecos.end() && !huecos.empty();pos2++){
+                if(pos1->get_mp()==pos2->get_mp()) continue;
+                if((pos1->get_mp()+pos1->get_rm())==pos2->get_mp()){
+                    pos1->setRequiredMem(pos1->get_rm() + pos2->get_rm());
                     huecos.erase(pos2);
+                    if(huecos.size() < 2) break;
                 }
             }
         }
@@ -298,23 +300,26 @@ void siguienteHueco(vector<Event> *events){
                     break;
                 }
             }
-            Hueco h = huecos.at(index);
-            if(h.get_rm()>pp.get_rm()){
-                pp.setMountingPoint(MAX_MEM - h.get_rm());
+            Hueco *h = &huecos.at(index);
+            if(h->get_rm()>pp.get_rm()){
+                pp.setMountingPoint(MAX_MEM - h->get_rm());
                 runnign_proces.push_back(pp);
-                h.setRequiredMem(h.get_rm() - pp.get_rm());
-                h.setMountingPoint(pp.get_rm());
-                last_assigned = h.get_mp();
+                h->setRequiredMem(h->get_rm() - pp.get_rm());
+                h->setMountingPoint(pp.get_rm());
+                last_assigned = h->get_mp();
                 if(j < list_p.size())
-                    pp = list_p.at(j++);
+                    pp = list_p.at(j);
+                j++;
             }
         }
-        Event *e = new Event(i);
-        for(Proceso pa: runnign_proces) e->addElement(pa);
-        events->push_back(*e);
+        Event e(i);
+        for(Proceso pa: runnign_proces) e.addElement(pa); 
+        for(Proceso pa: huecos) e.addElement(pa); 
+        events.push_back(e);
         i++;
-        if(runnign_proces.empty() && j>= list_p.size()) break;
+        if(runnign_proces.empty() && j > list_p.size()) break;
     }
+    return events;
 }
 
 void primerHueco(vector<Event> *events){
@@ -326,7 +331,7 @@ void primerHueco(vector<Event> *events){
     huecos.push_back(Hueco(0, MAX_MEM));
     Proceso pp = list_p.at(j++);
     while(true){
-        for(vector<Proceso>::iterator pos = runnign_proces.begin(); pos != runnign_proces.end();pos++){
+        for(vector<Proceso>::iterator pos = runnign_proces.begin(); pos != runnign_proces.end() && !runnign_proces.empty();pos++){
             Proceso pa = *pos;
             if( i + pa.get_at() >= pa.get_et() ){
                 Hueco h1(pa.get_mp(), pa.get_rm());
@@ -335,9 +340,9 @@ void primerHueco(vector<Event> *events){
             }
         }
         sort(huecos.begin(), huecos.end(),procesosArrivaltimeSort);
-        for(vector<Hueco>::iterator pos1 = huecos.begin(); pos1 != huecos.end();pos1++){
+        for(vector<Hueco>::iterator pos1 = huecos.begin(); pos1 != huecos.end() && !huecos.empty();pos1++){
             Hueco h1 = *pos1;
-            for(vector<Hueco>::iterator pos2 = huecos.begin(); pos2 != huecos.end();pos2++){
+            for(vector<Hueco>::iterator pos2 = huecos.begin(); pos2 != huecos.end() && !huecos.empty();pos2++){
                 Hueco h2 = *pos2;
                 if(h1.get_mp()==h2.get_mp()) continue;
                 if((h1.get_mp()+h1.get_rm())==h2.get_mp()-1){
@@ -373,20 +378,20 @@ void primerHueco(vector<Event> *events){
 }
 
 void executeAlgorithms(string file, int opt){
-    vector<Event> *events = new vector<Event>();
+    vector<Event> events;
     readFile(file,events);
     switch(opt){
         case 'M':
-            mejorHueco(events);
+            mejorHueco(&events);
             break;
         case 'P':
-            peorHueco(events);
+            peorHueco(&events);
             break;
         case 'S':
 			siguienteHueco(events);
 		    break;
         case 'F':
-			primerHueco(events);
+			primerHueco(&events);
 		    break;
         default:
             cout << "Opcion incorrecta... Use: M,P,S,F" << endl;
@@ -416,7 +421,7 @@ int main(int argc, char **argv){
             opt = toupper(argv[2][0]);
         }
         executeAlgorithms(filename, opt);
-        printf("Los resultados los puedes consultar en el archivo: %s", OUTPUT.c_str());
+        printf("Los resultados los puedes consultar en el archivo: %s\n", OUTPUT.c_str());
         //printf("Quieres visualizarlos ahora? [S/N]");
         if(argc==1) printf("Quieres introducir nuevos procesos? Se borrara el contenido de %s [S/N]", OUTPUT.c_str());
         if(toupper(getchar())=='N') break;
